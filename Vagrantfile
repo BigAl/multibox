@@ -8,29 +8,35 @@ INSTANCES=1
 # and node0.example.net, you can change this here
 DOMAIN="example.net"
 
-# these nodes do not need a lot of RAM, 384 is
-# is enough but you can tweak that here
-
 # the instances is a hostonly network, this will
 # be the prefix to the subnet they use
 SUBNET="192.168.2"
 
-Vagrant::Config.run do |config|
-  config.vm.define :server do |vmconfig|
-    vmconfig.vm.box = "centos-6.5"
-    vmconfig.vm.network :hostonly, "#{SUBNET}.10"
-    vmconfig.vm.host_name = "server.#{DOMAIN}"
-    vmconfig.vm.provision :shell, :path => "bootstrap.sh"
+Vagrant.configure("2") do |config|
+  config.vm.box = "centos-6.5"
+  config.vm.box_url = "https://dl.dropboxusercontent.com/u/2236361/VMs/centos-6.5_x86_20140819.box"
+  config.vm.provision :shell, :path => "bootstrap.sh"
+  config.vm.provision "puppet" do |puppet|
+    puppet.manifests_path = "puppet/manifests"
+    puppet.manifest_file = "default.pp"
+    puppet.module_path = "puppet/modules"
+  end
 
+  config.vm.provider "virtualbox" do |v|
+    v.memory = 1024
+    v.cpus = 1
+  end
+
+  config.vm.define "server" do |vmconfig|
+    vmconfig.vm.network "private_network", ip: "#{SUBNET}.10"
+    vmconfig.vm.host_name = "server.#{DOMAIN}"
   end
 
   INSTANCES.times do |i|
-    config.vm.define "node#{i}".to_sym do |vmconfig|
-      vmconfig.vm.box = "centos-6.5"
-      vmconfig.vm.network :hostonly, "#{SUBNET}.%d" % (10 + i + 1)
+    config.vm.define "node#{i}" do |vmconfig|
+      vmconfig.vm.network "private_network", ip: "#{SUBNET}.%d" % (10 + i + 1)
       vmconfig.vm.host_name = "node%d.#{DOMAIN}" % i
-      vmconfig.vm.provision :shell, :path => "bootstrap.sh"
-
     end
   end
+
 end
