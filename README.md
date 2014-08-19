@@ -5,11 +5,14 @@ A basic multinode [Vagrant](http://vagrantup.com) configuration handy for testin
 
 ## Usage
 INSTANCES - set the number of client nodes
+
 DOMAIN - domain name of all nodes
+
 SUBNET - The hostonly private network
 
 ## Provisioner
 Shell: bootstrap.sh currently installs puppet on all nodes
+
 Puppet: default.pp should print out "Hello World" if everything is working ok.
 
 ## Vagrant Box
